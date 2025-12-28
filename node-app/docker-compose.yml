@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: node-app-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: db
+      MYSQL_USER: mysql
+      MYSQL_PASSWORD: mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "mysql", "-pmysql"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - node-app-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: node-app
+    environment:
+      DB_HOST: mysql
+      DB_USER: mysql
+      DB_PASSWORD: mysql
+      DB_NAME: db
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./public/images:/app/public/images
+    networks:
+      - node-app-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+
+networks:
+  node-app-network:
+    driver: bridge
+

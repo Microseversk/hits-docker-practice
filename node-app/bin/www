@@ -9,7 +9,35 @@ let debug = require('debug')('node-app:server');
 let http = require('http');
 let db = require('../db');
 
-db.connection.connect();
+// Handle connection errors BEFORE attempting to connect
+db.connection.on('error', function(err) {
+  console.error('MySQL connection error:', err.message);
+  if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+    console.log('Attempting to reconnect to MySQL...');
+    db.connection.connect(function(reconnectErr) {
+      if (reconnectErr) {
+        console.error('Reconnection failed:', reconnectErr.message);
+      } else {
+        console.log('Reconnected to MySQL');
+      }
+    });
+  } else if (err.code !== 'ECONNREFUSED') {
+    // Only log non-connection-refused errors, don't crash
+    console.error('MySQL error:', err);
+  }
+});
+
+// Connect to database with error handling
+db.connection.connect(function(err) {
+  if (err) {
+    console.error('Error connecting to MySQL database:', err.message);
+    console.error('Please make sure MySQL is running and credentials in db.js are correct');
+    console.error('Server will start, but database operations will fail');
+    // Don't exit - let the server start anyway, but database operations will fail
+  } else {
+    console.log('Connected to MySQL database');
+  }
+});
 
 /**
  * Get port from environment and store in Express.

@@ -1,0 +1,21 @@
+extends layout
+
+block content
+  h1 Upload New Image
+  form(action="/new", method="post", enctype="multipart/form-data")
+    div
+      label(for="name") Name:
+      input(type="text", name="name", id="name", required)
+    div
+      label(for="author") Author:
+      input(type="text", name="author", id="author")
+    div
+      label(for="description") Description:
+      textarea(name="description", id="description", rows="4")
+    div
+      label(for="image") Image:
+      input(type="file", name="image", id="image", accept="image/*", required)
+    div
+      button(type="submit") Upload Image
+  a(href="/") Back to Gallery
+
