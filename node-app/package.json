@@ -5,7 +5,11 @@
   "scripts": {
     "start": "node ./bin/www",
     "test": "jest --coverage",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "loadtest": "node scripts/loadtest.js",
+    "loadtest:quick": "node scripts/loadtest-quick.js",
+    "loadtest:all": "node scripts/loadtest-all.js",
+    "loadtest:report": "node scripts/loadtest-report.js"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
@@ -21,7 +25,9 @@
   },
   "devDependencies": {
     "jest": "^29.7.0",
-    "supertest": "^6.3.3"
+    "supertest": "^6.3.3",
+    "autocannon": "^7.12.0",
+    "cli-table3": "^0.6.5"
   },
   "jest": {
     "testEnvironment": "node",
