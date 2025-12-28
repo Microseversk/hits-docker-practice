@@ -1,14 +1,15 @@
-let createError = require('http-errors');
-let express = require('express');
-let path = require('path');
-let cookieParser = require('cookie-parser');
-let logger = require('morgan');
-let formData = require("express-form-data");
-let os = require("os");
-let cors = require('cors')
+const createError = require("http-errors");
+const express = require("express");
+const path = require("path");
+const cookieParser = require("cookie-parser");
+const logger = require("morgan");
+const formData = require("express-form-data");
+const os = require("os");
+const cors = require("cors");
+const config = require("./config");
 
-let indexRouter = require('./routes/index');
-let app = express();
+const indexRouter = require("./routes/index");
+const app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

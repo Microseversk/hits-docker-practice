@@ -8,6 +8,10 @@ const db = require("../../db");
 
 // Мокаем модули
 jest.mock("../../db", () => ({
+  pool: {},
+  query: jest.fn(),
+  getConnection: jest.fn(),
+  // Для обратной совместимости
   connection: {
     query: jest.fn(),
   },
@@ -92,9 +96,7 @@ describe("Routes", () => {
         },
       ];
 
-      db.connection.query.mockImplementation((query, callback) => {
-        callback(null, mockImages);
-      });
+      db.query.mockResolvedValue({ results: mockImages, fields: [] });
 
       request(app)
         .get("/")
@@ -110,9 +112,7 @@ describe("Routes", () => {
     test("должен обработать ошибку базы данных", (done) => {
       const dbError = new Error("Database connection failed");
 
-      db.connection.query.mockImplementation((query, callback) => {
-        callback(dbError, null);
-      });
+      db.query.mockRejectedValue(dbError);
 
       request(app)
         .get("/")
@@ -162,8 +162,12 @@ describe("Routes", () => {
         .field("name", "Test")
         .field("author", "Author")
         .expect(400)
-        .expect("image required")
-        .end(done);
+        .expect("Content-Type", /json/)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body).toHaveProperty("error", "image required");
+          done();
+        });
     });
   });
 
@@ -184,9 +188,7 @@ describe("Routes", () => {
         },
       ];
 
-      db.connection.query.mockImplementation((query, callback) => {
-        callback(null, mockImages);
-      });
+      db.query.mockResolvedValue({ results: mockImages, fields: [] });
 
       request(app)
         .get("/all")
@@ -204,9 +206,7 @@ describe("Routes", () => {
     test("должен обработать ошибку базы данных", (done) => {
       const dbError = new Error("Database error");
 
-      db.connection.query.mockImplementation((query, callback) => {
-        callback(dbError, null);
-      });
+      db.query.mockRejectedValue(dbError);
 
       request(app).get("/all").expect(500).end(done);
     });

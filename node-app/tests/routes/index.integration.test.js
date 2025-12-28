@@ -4,6 +4,9 @@ const db = require("../../db");
 
 // Мокаем БД
 jest.mock("../../db", () => ({
+  pool: {},
+  query: jest.fn(),
+  getConnection: jest.fn(),
   connection: {
     query: jest.fn(),
   },
@@ -25,9 +28,7 @@ describe("Routes Integration Tests", () => {
         },
       ];
 
-      db.connection.query.mockImplementation((query, callback) => {
-        callback(null, mockImages);
-      });
+      db.query.mockResolvedValue({ results: mockImages, fields: [] });
 
       request(app)
         .get("/")
@@ -49,9 +50,7 @@ describe("Routes Integration Tests", () => {
     test("должен вернуть JSON с изображениями", (done) => {
       const mockImages = [{ id: 1, name: "Test", path: "test.jpg" }];
 
-      db.connection.query.mockImplementation((query, callback) => {
-        callback(null, mockImages);
-      });
+      db.query.mockResolvedValue({ results: mockImages, fields: [] });
 
       request(app)
         .get("/all")
