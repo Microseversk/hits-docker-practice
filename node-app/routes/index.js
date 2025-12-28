@@ -3,15 +3,11 @@ let express = require("express");
 let db = require("../db");
 let router = express.Router();
 let { v4: uuidv4 } = require("uuid");
-
-function streamToString(stream) {
-  const chunks = [];
-  return new Promise((resolve, reject) => {
-    stream.on("data", (chunk) => chunks.push(chunk));
-    stream.on("error", reject);
-    stream.on("end", () => resolve(Buffer.concat(chunks)));
-  });
-}
+const {
+  streamToString,
+  getFileExtension,
+  ensureDirectoryExists,
+} = require("../utils/fileUtils");
 
 /* GET index page */
 router.get("/", function (req, res, next) {
@@ -56,16 +52,12 @@ router.post("/new", async function (req, res, next) {
     // Получаем расширение файла из оригинального имени или пути
     const imageFile = req.files["image"];
     const originalName = imageFile.name || imageFile.path || "";
-    const extension = originalName.includes(".")
-      ? "." + originalName.split(".").pop()
-      : ".jpg";
+    const extension = getFileExtension(originalName);
     const fileName = uuidv4() + extension;
 
     // Убеждаемся, что директория существует
     const imagesDir = "./public/images";
-    if (!fs.existsSync(imagesDir)) {
-      fs.mkdirSync(imagesDir, { recursive: true });
-    }
+    ensureDirectoryExists(imagesDir);
 
     const imageDataString = await streamToString(imageFile);
     fs.writeFileSync(imagesDir + "/" + fileName, imageDataString);
@@ -98,8 +90,7 @@ router.post("/new", async function (req, res, next) {
 router.get("/all", async function (req, res, next) {
   db.connection.query("SELECT * from data", function (err, rows, fields) {
     if (err) {
-      res.sendStatus(500);
-      res.send(err);
+      res.status(500).send(err);
     } else {
       res.send(rows);
     }
