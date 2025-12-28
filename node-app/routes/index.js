@@ -72,7 +72,8 @@ router.post("/new", async (req, res, next) => {
     }
 
     // Валидация: проверка типа файла
-    const mimeType = imageFile.type || "";
+    const mimeType = imageFile.type || "image/jpeg";
+    console.log("@mimeType - ", mimeType);
     if (!config.upload.allowedMimeTypes.includes(mimeType)) {
       return res.status(400).json({
         error: "Invalid file type. Allowed types: JPEG, PNG, GIF, WebP",
